@@ -17,8 +17,10 @@ from src.utils import (
     lista_meses,
 )
 
+
 # 1. Configuração Inicial e Segurança
 configurar_pagina("CleanLog - Dashboard Analítico")
+lista_meses = lista_meses()
 
 st.title("📊 Painel de Indicadores")
 df_bruto = obter_todos_dados_como_df()

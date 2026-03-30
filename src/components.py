@@ -3,6 +3,7 @@ import streamlit as st
 import plotly.express as px
 from src.utils import formatar_horario, obter_dias_do_mes, lista_meses
 
+lista_meses = lista_meses()
 
 def configurar_pagina(titulo_pagina: str, layout: str = "wide"):
     """Configura o layout e trava o acesso para usuários não logados."""

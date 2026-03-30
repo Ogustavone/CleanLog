@@ -5,7 +5,7 @@ from datetime import datetime
 from src.components import configurar_pagina, renderizar_seletor_calendario
 
 configurar_pagina("CleanLog - Lançamento Mensal", "centered")
-
+lista_meses = lista_meses()
 
 st.title("📝 Form. Fechamento Mensal")
 with st.container(border=True):
