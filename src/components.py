@@ -1,26 +1,16 @@
 from datetime import date, datetime
 import streamlit as st
 import plotly.express as px
-from src.utils import formatar_horario, obter_dias_do_mes
-import locale
-import calendar
+from src.utils import formatar_horario, obter_dias_do_mes, lista_meses
 
 
 def configurar_pagina(titulo_pagina: str, layout: str = "wide"):
-    """Configura o layout, locale e trava o acesso para usuários não logados."""
+    """Configura o layout e trava o acesso para usuários não logados."""
     if not st.session_state.get("authentication_status"):
         st.error("🚫 Acesso negado. Faça login na página inicial.")
         st.link_button("Ir para o Login", "/")
         st.stop()
-
     st.set_page_config(page_title=titulo_pagina, layout=layout)
-    locales = ["pt_BR.UTF-8", "portuguese_brazil", "pt_BR", "ptb"]
-    for loc in locales:
-        try:
-            locale.setlocale(locale.LC_ALL, loc)
-            break
-        except locale.Error:
-            continue
 
 def exibir_metricas_dashboard(df_filtrado):
     """Renderiza os cartões de métricas principais."""
@@ -28,7 +18,6 @@ def exibir_metricas_dashboard(df_filtrado):
     custo_total = (
         df_filtrado["Custo_Dia"].sum() if "Custo_Dia" in df_filtrado.columns else 0.0
     )
-
     if custo_total > 0:
         m1, m2, m3 = st.columns(3)
         m1.metric("Total de Horas", f"{df_filtrado['Total_Horas_Dia'].sum():.1f}h ⏳")
@@ -94,23 +83,17 @@ def exibir_graficos_secundarios(df_filtrado, df_expandido):
 
 
 def renderizar_seletor_calendario(contexto: list):
-    """
-    Renderiza um st.date_input para seleção de data responsiva.
-    """
     _, mes_selecionado_nome, ano_selecionado = contexto
-    lista_meses = [calendar.month_name[i].capitalize() for i in range(1, 13)]
     indice_mes = lista_meses.index(mes_selecionado_nome) + 1
-
     data_foco_inicial = date(ano_selecionado, indice_mes, 1)
-
+    
     st.markdown("#### 📅 Selecione o dia no calendário:")
-
     data_selecionada = st.date_input(
         "Data de Lançamento",
         value=data_foco_inicial,
         min_value=date(2020, 1, 1),
         max_value=date(2030, 12, 31),
-        key="calendario_nativo",
+        key="calendario",
         format="DD/MM/YYYY",
         label_visibility="collapsed",
     )
@@ -119,7 +102,6 @@ def renderizar_seletor_calendario(contexto: list):
         dia_sel = data_selecionada.day
         status_chave = f"status_{dia_sel}"
         status_atual = st.session_state.get(status_chave, "")
-
         c1, c2 = st.columns([3, 1])
         with c1:
             st.info(
@@ -136,7 +118,6 @@ def renderizar_seletor_data():
     """Renderiza os seletores de data para exportação.
     Retorna: [dia_inicial, dia_final], [mes_inicial, mes_final], ano
     """
-    lista_meses = [calendar.month_name[i].capitalize() for i in range(1, 13)]
     date_today = date.today()
 
     c1, c2 = st.columns([1, 2])
@@ -148,10 +129,10 @@ def renderizar_seletor_data():
     ).lower()
 
     ultimo_dia_ini = obter_dias_do_mes(
-        date_today.year, mes_inicial.capitalize(), lista_meses
+        date_today.year, mes_inicial.lower(), lista_meses
     )
     ultimo_dia_fim = obter_dias_do_mes(
-        date_today.year, mes_final.capitalize(), lista_meses
+        date_today.year, mes_final.lower(), lista_meses
     )
 
     dia_inicial = c1.number_input(

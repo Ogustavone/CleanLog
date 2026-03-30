@@ -1,4 +1,3 @@
-import calendar
 from datetime import date
 import pandas as pd
 
@@ -15,6 +14,7 @@ from src.utils import (
     processar_dados_dashboard,
     expandir_unidades,
     formatar_unidades_para_tabela,
+    lista_meses,
 )
 
 # 1. Configuração Inicial e Segurança
@@ -59,11 +59,15 @@ st.divider()
 st.write("### 📋 Exportar dados")
 
 dias, meses, ano = renderizar_seletor_data()
-meses_map = {name.lower(): i for i, name in enumerate(calendar.month_name) if name}
+meses_map = {nome.lower(): i + 1 for i, nome in enumerate(lista_meses)}
 
 try:
-    data_inicio_periodo = date(ano, meses_map[meses[0]], dias[0])
-    data_fim_periodo = date(ano, meses_map[meses[1]], dias[1])
+    m_ini = meses[0].lower()
+    m_fim = meses[1].lower()
+    
+    data_inicio_periodo = date(ano, meses_map[m_ini], dias[0])
+    data_fim_periodo = date(ano, meses_map[m_fim], dias[1])
+    
     df_exportar = filtro.copy()
 
     def converter_para_date(txt):
@@ -74,10 +78,12 @@ try:
             return None
 
     df_exportar["data_comparacao"] = df_exportar["Data"].apply(converter_para_date)
-    mask = (df_exportar["data_comparacao"] >= data_inicio_periodo) & (
-        df_exportar["data_comparacao"] <= data_fim_periodo
-    )
+    
+    mask = (df_exportar["data_comparacao"] >= data_inicio_periodo) & \
+           (df_exportar["data_comparacao"] <= data_fim_periodo)
+    
     df_final = df_exportar.loc[mask].drop(columns=["data_comparacao"]).copy()
+
 except Exception as e:
     st.error(f"Erro na conversão de datas: {e}")
     df_final = pd.DataFrame()

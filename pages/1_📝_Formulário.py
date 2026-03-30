@@ -1,8 +1,7 @@
 import streamlit as st
-from src.utils import obter_dias_do_mes, preparar_registros_para_envio
+from src.utils import obter_dias_do_mes, preparar_registros_para_envio, lista_meses
 from src.database import adicionar_dataframe_na_planilha
 from datetime import datetime
-import calendar
 from src.components import configurar_pagina, renderizar_seletor_calendario
 
 configurar_pagina("CleanLog - Lançamento Mensal", "centered")
@@ -15,9 +14,8 @@ with st.container(border=True):
     colaborador = col_nome.text_input(
         "Nome do Colaborador", placeholder="Ex: João Silva"
     )
-    lista_meses = [calendar.month_name[i].capitalize() for i in range(1, 13)]
     mes_selecionado = col_mes.selectbox(
-        "Mês", lista_meses, index=datetime.now().month - 1
+        "Mês", [mes.capitalize() for mes in lista_meses], index=datetime.now().month - 1
     )
     ano_selecionado = col_ano.number_input("Ano", value=datetime.now().year)
 
@@ -30,7 +28,7 @@ with st.container(border=True):
         elif len(colaborador) < 3:
             st.warning("O nome do colaborador deve conter pelo menos 3 caracteres.")
         else:
-            data_final_selecionada = st.session_state.get("calendario_nativo")
+            data_final_selecionada = st.session_state.get("calendario")
 
             if not data_final_selecionada:
                 st.error("Por favor, selecione uma data no calendário antes de enviar.")

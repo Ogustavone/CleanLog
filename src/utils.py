@@ -38,9 +38,11 @@ def formatar_unidades_para_tabela(unidade_bruta):
 
     return ", ".join(unidades_formatadas)
 
-
 def obter_dias_do_mes(ano, nome_mes, lista_meses):
-    indice_mes = lista_meses.index(nome_mes) + 1
+    lista_minuscula = [m.lower() for m in lista_meses]
+    mes_procurado = nome_mes.lower().strip()
+    
+    indice_mes = lista_minuscula.index(mes_procurado) + 1
     _, ultimo_dia = calendar.monthrange(ano, indice_mes)
     return ultimo_dia
 
@@ -133,3 +135,18 @@ def formatar_data_para_status(data_obj):
 def validar_email(email):
     padrao = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return bool(re.match(padrao, email))
+
+lista_meses = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+]
