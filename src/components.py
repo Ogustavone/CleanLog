@@ -14,12 +14,13 @@ def configurar_pagina(titulo_pagina: str, layout: str = "wide"):
         st.stop()
 
     st.set_page_config(page_title=titulo_pagina, layout=layout)
-
-    try:
-        locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
-    except Exception:
-        locale.setlocale(locale.LC_ALL, "")
-
+    locales = ["pt_BR.UTF-8", "portuguese_brazil", "pt_BR", "ptb"]
+    for loc in locales:
+        try:
+            locale.setlocale(locale.LC_ALL, loc)
+            break
+        except locale.Error:
+            continue
 
 def exibir_metricas_dashboard(df_filtrado):
     """Renderiza os cartões de métricas principais."""
