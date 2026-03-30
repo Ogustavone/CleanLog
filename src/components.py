@@ -5,6 +5,7 @@ from src.utils import formatar_horario, obter_dias_do_mes
 import locale
 import calendar
 
+
 def configurar_pagina(titulo_pagina: str, layout: str = "wide"):
     """Configura o layout, locale e trava o acesso para usuários não logados."""
     if not st.session_state.get("authentication_status"):
@@ -13,9 +14,9 @@ def configurar_pagina(titulo_pagina: str, layout: str = "wide"):
         st.stop()
 
     st.set_page_config(page_title=titulo_pagina, layout=layout)
-    
+
     try:
-        locale.setlocale( "pt_BR.UTF-8" )
+        locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
     except Exception:
         locale.setlocale(locale.LC_ALL, "")
 
@@ -23,8 +24,10 @@ def configurar_pagina(titulo_pagina: str, layout: str = "wide"):
 def exibir_metricas_dashboard(df_filtrado):
     """Renderiza os cartões de métricas principais."""
     st.divider()
-    custo_total = df_filtrado['Custo_Dia'].sum() if 'Custo_Dia' in df_filtrado.columns else 0.0
-    
+    custo_total = (
+        df_filtrado["Custo_Dia"].sum() if "Custo_Dia" in df_filtrado.columns else 0.0
+    )
+
     if custo_total > 0:
         m1, m2, m3 = st.columns(3)
         m1.metric("Total de Horas", f"{df_filtrado['Total_Horas_Dia'].sum():.1f}h ⏳")
@@ -35,36 +38,59 @@ def exibir_metricas_dashboard(df_filtrado):
     m1.metric("Total de Horas", f"{df_filtrado['Total_Horas_Dia'].sum():.1f}h ⏳")
     m2.metric("Dias Trabalhados", f"{df_filtrado['Data'].nunique()} 📅")
 
+
 def exibir_graficos_principais(df_filtrado, df_expandido, func_sel):
     """Desenha os gráficos de evolução e pizza."""
     st.write("### 📈 Análise de Operação")
     col1, col2 = st.columns([2, 1])
     with col1:
-        fig_evolucao = px.line(df_filtrado, x='Data', y='Total_Horas_Dia',
-                             color='Funcionário' if func_sel == "Todos" else None,
-                             title="Evolução de Horas", markers=True)
+        fig_evolucao = px.line(
+            df_filtrado,
+            x="Data",
+            y="Total_Horas_Dia",
+            color="Funcionário" if func_sel == "Todos" else None,
+            title="Evolução de Horas",
+            markers=True,
+        )
         st.plotly_chart(fig_evolucao, use_container_width=True)
     with col2:
         if not df_expandido.empty:
-            df_exp_f = df_expandido[df_expandido['Funcionário'].isin(df_filtrado['Funcionário'].unique())]
-            periodo = df_exp_f.groupby('Periodo').size().reset_index(name='Qtd')
-            fig_pizza = px.pie(periodo, values='Qtd', names='Periodo', title="Turnos", hole=0.5)
+            df_exp_f = df_expandido[
+                df_expandido["Funcionário"].isin(df_filtrado["Funcionário"].unique())
+            ]
+            periodo = df_exp_f.groupby("Periodo").size().reset_index(name="Qtd")
+            fig_pizza = px.pie(
+                periodo, values="Qtd", names="Periodo", title="Turnos", hole=0.5
+            )
             st.plotly_chart(fig_pizza, use_container_width=True)
+
 
 def exibir_graficos_secundarios(df_filtrado, df_expandido):
     """Desenha comparativos e turnos por unidade."""
     col1, col2 = st.columns(2)
     with col1:
-        comp = df_filtrado.groupby('Funcionário')[['Horas_Reg_Num', 'Horas_Ext_Num']].sum().reset_index()
-        fig_bar = px.bar(comp, x='Funcionário', y=['Horas_Reg_Num', 'Horas_Ext_Num'],
-                        title="Regulares vs Extras", barmode='group')
+        comp = (
+            df_filtrado.groupby("Funcionário")[["Horas_Reg_Num", "Horas_Ext_Num"]]
+            .sum()
+            .reset_index()
+        )
+        fig_bar = px.bar(
+            comp,
+            x="Funcionário",
+            y=["Horas_Reg_Num", "Horas_Ext_Num"],
+            title="Regulares vs Extras",
+            barmode="group",
+        )
         st.plotly_chart(fig_bar, use_container_width=True)
     with col2:
         if not df_expandido.empty:
-            df_exp_f = df_expandido[df_expandido['Funcionário'].isin(df_filtrado['Funcionário'].unique())]
-            un = df_exp_f.groupby('Unidade_Indiv').size().reset_index(name='Qtd')
-            fig_un = px.bar(un, x='Unidade_Indiv', y='Qtd', title="Turnos por Unidade")
+            df_exp_f = df_expandido[
+                df_expandido["Funcionário"].isin(df_filtrado["Funcionário"].unique())
+            ]
+            un = df_exp_f.groupby("Unidade_Indiv").size().reset_index(name="Qtd")
+            fig_un = px.bar(un, x="Unidade_Indiv", y="Qtd", title="Turnos por Unidade")
             st.plotly_chart(fig_un, use_container_width=True)
+
 
 def renderizar_seletor_calendario(contexto: list):
     """
@@ -86,20 +112,25 @@ def renderizar_seletor_calendario(contexto: list):
         max_value=date(2030, 12, 31),
         key="calendario_nativo",
         format="DD/MM/YYYY",
-        label_visibility="collapsed"
+        label_visibility="collapsed",
     )
 
     if data_selecionada:
         dia_sel = data_selecionada.day
-        status_chave = f"status_{dia_sel}" 
+        status_chave = f"status_{dia_sel}"
         status_atual = st.session_state.get(status_chave, "")
-        
+
         c1, c2 = st.columns([3, 1])
         with c1:
-            st.info(f"Data selecionada: **{data_selecionada.strftime('%d/%m/%Y')}** {status_atual}")
+            st.info(
+                f"Data selecionada: **{data_selecionada.strftime('%d/%m/%Y')}** {status_atual}"
+            )
         with c2:
-            if st.button("Abrir Lançamento 🚀", use_container_width=True, type="primary"):
+            if st.button(
+                "Abrir Lançamento 🚀", use_container_width=True, type="primary"
+            ):
                 abrir_popup_dia(dia_sel, mes_selecionado_nome)
+
 
 def renderizar_seletor_data():
     """Renderiza os seletores de data para exportação.
@@ -109,24 +140,44 @@ def renderizar_seletor_data():
     date_today = date.today()
 
     c1, c2 = st.columns([1, 2])
-    mes_inicial = c2.selectbox("Do Mês:", lista_meses, index=date_today.month - 2).lower()
-    mes_final = c2.selectbox("Até Mês:", lista_meses, index=date_today.month - 1).lower()
-    
-    ultimo_dia_ini = obter_dias_do_mes(date_today.year, mes_inicial.capitalize(), lista_meses)
-    ultimo_dia_fim = obter_dias_do_mes(date_today.year, mes_final.capitalize(), lista_meses)
+    mes_inicial = c2.selectbox(
+        "Do Mês:", lista_meses, index=date_today.month - 2
+    ).lower()
+    mes_final = c2.selectbox(
+        "Até Mês:", lista_meses, index=date_today.month - 1
+    ).lower()
 
-    dia_inicial = c1.number_input("Do dia:", min_value=1, max_value=ultimo_dia_ini, value=1)
-    dia_final = c1.number_input("Até dia:", min_value=1, max_value=ultimo_dia_fim, value=date_today.day)
+    ultimo_dia_ini = obter_dias_do_mes(
+        date_today.year, mes_inicial.capitalize(), lista_meses
+    )
+    ultimo_dia_fim = obter_dias_do_mes(
+        date_today.year, mes_final.capitalize(), lista_meses
+    )
 
-    ano = st.number_input("Ano", min_value=date_today.year - 5, max_value=date_today.year + 5, value=date_today.year)
+    dia_inicial = c1.number_input(
+        "Do dia:", min_value=1, max_value=ultimo_dia_ini, value=1
+    )
+    dia_final = c1.number_input(
+        "Até dia:", min_value=1, max_value=ultimo_dia_fim, value=date_today.day
+    )
+
+    ano = st.number_input(
+        "Ano",
+        min_value=date_today.year - 5,
+        max_value=date_today.year + 5,
+        value=date_today.year,
+    )
 
     return [dia_inicial, dia_final], [mes_inicial, mes_final], ano
+
 
 @st.dialog("Lançamento de Turnos")
 def abrir_popup_dia(dia, mes):
     UNIDADES_RU = ["RU-1", "RU-2", "RU-3", "RU-4", "RU-5", "RU-6", "RU-7"]
-    def obter_indice_unidade(selecao): return UNIDADES_RU.index(selecao) if selecao in UNIDADES_RU else 0
-    
+
+    def obter_indice_unidade(selecao):
+        return UNIDADES_RU.index(selecao) if selecao in UNIDADES_RU else 0
+
     st.write(f"### 🗓️ {dia} de {mes}")
     chaves_dados = f"dados_dia_{dia}"
     if chaves_dados not in st.session_state:
@@ -204,4 +255,3 @@ def abrir_popup_dia(dia, mes):
         }
         st.session_state[f"status_{dia}"] = "✅"
         st.rerun()
-        

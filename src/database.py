@@ -8,7 +8,9 @@ def _obter_cliente_gsheets():
     configuracao = st.secrets["connections"]["gsheets"]
     credenciais = {k: v for k, v in configuracao.items() if k != "spreadsheet"}
     escopos = ["https://www.googleapis.com/auth/spreadsheets"]
-    credenciais_servico = Credentials.from_service_account_info(credenciais, scopes=escopos)
+    credenciais_servico = Credentials.from_service_account_info(
+        credenciais, scopes=escopos
+    )
     return authorize(credenciais_servico)
 
 
