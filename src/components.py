@@ -96,7 +96,6 @@ def renderizar_seletor_calendario(contexto: list):
     """
     Renderiza um st.date_input para seleção de data responsiva.
     """
-    locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
     _, mes_selecionado_nome, ano_selecionado = contexto
     lista_meses = [calendar.month_name[i].capitalize() for i in range(1, 13)]
     indice_mes = lista_meses.index(mes_selecionado_nome) + 1
